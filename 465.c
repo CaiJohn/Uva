@@ -1,7 +1,8 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
-char* big_add(char a[], char b[]){
+#include<limits.h>
+char* big_add(char *a, char *b){
   char *answer;
   int la = strlen(a);
   int lb = strlen(b);
@@ -45,26 +46,84 @@ char* big_add(char a[], char b[]){
   answer[len] = '\0';
   return answer;
 }
+
+char* big_times(char *input1,char *input2){
+  int i;
+  int j;
+  int tag = 0;
+  int l1 = strlen(input1);
+  int l2 = strlen(input2);
+  char answer[100000];
+  char *tmp = (char*)(malloc(sizeof(char)*100000));
+  strcpy(tmp,"0");
+  int len=0;
+  for(i=0;i<l1;i++){
+    
+    int m;
+    for(m=0;m<i;m++){
+      answer[m] = '0';
+    }
+    tag = 0;
+    for(j=0;j<l2;j++){
+      answer[i+j] = ((input1[i]-'0')*(input2[j]-'0')+tag)%10 + '0';
+      tag = ((input1[i]-'0')*(input2[j]-'0')+tag)/10;
+    }
+    if(tag==0){
+      len = l2+i;
+    }
+    else{
+      len = l2+1+i;
+      answer[len-1] = tag + '0';
+    }
+    answer[len] = '\0';
+    int k;
+    for(k=0;k<len/2;k++){
+      char t;
+      t = answer[k];
+      answer[k] = answer[len-1-k];
+      answer[len-1-k] = t;
+    }
+    char *for_free = NULL;
+    for_free = tmp;
+
+    tmp = big_add(tmp,answer);
+    free(for_free);
+  }
+
+  return tmp;
+}
+
+int big_cmp(char *a,char *b){
+  return (strlen(a)>strlen(b)||((strlen(a)==strlen(b)&&strcmp(a,b))));
+}
 int main(){
-  char num1[10000],num2[10000];
+  
+  char num1[30000],num2[30000];
   char largest_int[1000];
-  strcpy(largest_int,"2147483647");
+  sprintf(largest_int,"%d",INT_MAX);
   char operator=0;
   while(scanf("%s %c %s",num1,&operator,num2)){
     int tag = 0;
-    if(strlen(num1)>strlen(largest_int)||((strlen(num1)==strlen(largest_int)&&strcmp(num1,largest_int)>0))){
-      //printf("first number too big\n");
+    printf("%s %c %s\n",num1,operator,num2);
+    if(big_cmp(num1,largest_int)){
+      printf("first number too big\n");
       tag = 1;
     }
-    if(strlen(num2)>strlen(largest_int)||((strlen(num2)==strlen(largest_int)&&strcmp(num2,largest_int)>0))){
-      //printf("%s\n",num2);
+
+    if(big_cmp(num2,largest_int)){
       printf("second number too big\n");
       tag = 1;
     }
-    char* sum=big_add(num1,num2);
-    if(tag || (strlen(sum)>strlen(largest_int)||((strlen(sum)==strlen(largest_int)&&strcmp(sum,largest_int)>0)))){
-      //printf("%s\n",sum);
+    char* sum;
+
+    if(tag == 1){
       printf("result too big\n");
+    }
+    else{
+      sum=operator=='+'?big_add(num1,num2):big_times(num1,num2);
+      if(big_cmp(sum,largest_int)){
+	printf("result too big\n");
+      }
     }
     if(sum){
       free(sum);
